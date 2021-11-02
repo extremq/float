@@ -6,12 +6,12 @@ import webbrowser
 from tkinter.constants import ACTIVE, DISABLED
 
 class gui():
-    mw = None # main window
-    mf = None # main frame
-    lf = None # label frame
-    cf = None # credit frame
-    tf = None # tool frame
-    vf = None # value frame
+    mw = None #  main window
+    mf = None #  main frame
+    lf = None #  label frame
+    cf = None #  credit frame
+    tf = None #  tool frame
+    vf = None #  value frame
     
     btn_error, btn_coef = None, None
     
@@ -80,10 +80,10 @@ class gui():
         btn_error.pack(side=tk.LEFT, padx=10)
         
         # Coefficient button
-        btn_coef = tk.Button(master=lf, text="Calcul coeficienți", bg='#fff',
-                             fg="#000", height=5, width=20, command=self.coef_mode, cursor="hand2")
+        btn_coef = tk.Button(master=lf, text="Calcul coeficienți", bg='#fff', fg="#000",
+                             height=5, width=20, command=self.coef_mode, cursor="hand2")
         btn_coef.pack(side=tk.RIGHT, padx=10)
-        
+
         return lf, btn_error, btn_coef
     
     # Bottom side of gui which contains credits
@@ -97,6 +97,7 @@ class gui():
                            bg="#fff", fg='#1e2375', cursor="hand2")
         credits.pack(side=tk.BOTTOM)
 
+        # Emulates a hyperlink
         credits.bind("<Button-1>", lambda e: webbrowser.open_new_tab('https://extremq.github.io'))
         credits.bind("<Enter>", lambda e: self.change_color(credits, 'red'))
         credits.bind("<Leave>", lambda e: self.change_color(credits, '#1e2375'))
@@ -117,7 +118,7 @@ class gui():
     # This will initialize the basic things needed to ask the user for the number of entries
     # as well as extra buttons for clearing and computing
     def init_count_entry(self, tool_frame, tool):
-        cnt_label = tk.Label(master=tool_frame, text="Număr determinări (2 - 100):", bg="#fff")
+        cnt_label = tk.Label(master=tool_frame, bg="#fff")
         cnt_label.pack()
         
         self.cnt_input = tk.Entry(master=tool_frame)
@@ -137,15 +138,15 @@ class gui():
         cnt_compute.place(x=83, y=40)
 
         if tool == 'error':
+            cnt_label['text'] = "Număr determinări (2 - 100):"
             cnt_valid['command'] = lambda: self.generate_error_entries(self.vf, self.cnt_input.get())
             cnt_clear['command'] = self.clear_error_values
             cnt_compute['command'] = self.compute_error
         else:
-            cnt_label['text']  = "Număr determinări (2 - 25):"
+            cnt_label['text'] = "Număr determinări (2 - 25):"
             cnt_valid['command'] = lambda: self.generate_coef_entries(self.vf, self.cnt_input.get())
             cnt_clear['command'] = self.clear_coef_values
             cnt_compute['command'] = self.compute_coef
-   
 
     def generate_coef_entries(self, value_frame, n):
         # Validation of size
@@ -157,7 +158,9 @@ class gui():
         self.cnt_input['bg'] = '#a2fa7d'
             
         count = self.state['coef']['count']
-        
+        values = self.state['coef']['values']
+        entries = self.state['coef']['entries']
+
         if n > count:
             start = count
             
@@ -165,29 +168,28 @@ class gui():
             for k in range(start, n):
                 row = k
                 
-                self.state['coef']['entries'][k] = [
+                entries[k] = [
                     tk.Entry(master=value_frame, width=10),
                     tk.Entry(master=value_frame, width=10),
                 ]
 
-                if self.state['coef']['values'][k][0]:
-                    self.state['coef']['entries'][k][0].insert(0, self.state['coef']['values'][k][0])
+                if values[k][0]:
+                    entries[k][0].insert(0, values[k][0])
 
-                if self.state['coef']['values'][k][1]:
-                    self.state['coef']['entries'][k][1].insert(0, self.state['coef']['values'][k][1])
+                if values[k][1]:
+                    entries[k][1].insert(0, values[k][1])
 
-                self.state['coef']['entries'][k][0].place(y=15+row*15, x=80)
-                self.state['coef']['entries'][k][1].place(y=15+row*15, x=180)
+                entries[k][0].place(y=15+row*15, x=80)
+                entries[k][1].place(y=15+row*15, x=180)
         elif n < count:
             start = n
             
             # Delete the extra entries only    
             for k in range(start, count):
-                self.state['coef']['values'][k][0] = self.state['coef']['entries'][k][0].get()
-                self.state['coef']['values'][k][1] = self.state['coef']['entries'][k][1].get()
-                self.state['coef']['entries'][k][0].destroy()
-                self.state['coef']['entries'][k][1].destroy()
-        
+                values[k][0] = entries[k][0].get()
+                values[k][1] = entries[k][1].get()
+                entries[k][0].destroy()
+                entries[k][1].destroy()
         self.state['coef']['count'] = n
 
     def generate_error_entries(self, value_frame, n):
@@ -200,7 +202,9 @@ class gui():
         self.cnt_input['bg'] = '#a2fa7d'
             
         count = self.state['error']['count']
-        
+        values = self.state['error']['values']
+        entries = self.state['error']['entries']
+
         if n > count:
             start = count
             
@@ -209,19 +213,19 @@ class gui():
                 row = k // 4
                 column = k % 4
                 
-                self.state['error']['entries'][k] = tk.Entry(master=value_frame,
-                                                            width=10)
-                if self.state['error']['values'][k]:
-                    self.state['error']['entries'][k].insert(0, self.state['error']['values'][k])
-                self.state['error']['entries'][k].place(y=15+row*15, x=13+column*80)
+                entries[k] = tk.Entry(master=value_frame, width=10)
+
+                if values[k]:
+                    entries[k].insert(0, values[k])
+                
+                entries[k].place(y=15+row*15, x=13+column*80)
         elif n < count:
             start = n
             
             # Delete the extra entries only    
             for k in range(start, count):
-                self.state['error']['values'][k] = self.state['error']['entries'][k].get()
-                self.state['error']['entries'][k].destroy()
-        
+                values[k] = entries[k].get()
+                entries[k].destroy()
         self.state['error']['count'] = n
     
     def compute_error(self):
@@ -251,8 +255,9 @@ class gui():
                 value = float(value)
                 sum_of_deltas += (average_element - value) ** 2
         
-        average_delta = math.sqrt(sum_of_deltas / (valid_elements * (valid_elements - 1)))
-        percent_delta = average_delta / average_element * 100
+        average_delta = round(math.sqrt(sum_of_deltas / (valid_elements * (valid_elements - 1))), 8)
+        percent_delta = round(average_delta / average_element * 100, 8)
+        average_element = round(average_element, 8)
         
         popup = tk.Toplevel(master=self.mw)
         popup.title(f"Rezultat - {valid_elements} elemente.")
@@ -290,7 +295,9 @@ class gui():
 
         b = (valid_elements * sum_product - sum_x * sum_y) / (valid_elements * sum_x_square - sum_x ** 2)
         a = (sum_x_square * sum_y - sum_x * sum_product) / (valid_elements * sum_x_square - sum_x ** 2)
-
+        
+        b = round(b, 8)
+        a = round(a, 8)
         
         popup = tk.Toplevel(master=self.mw)
         popup.title(f"Rezultat - {valid_elements} elemente.")
@@ -303,60 +310,74 @@ class gui():
     # Since entries are different based on tool, I will split their functions
     def clear_error_values(self):
         for k in range(0, self.state['error']['count']):
-                self.state['error']['values'][k] = None
+            self.state['error']['values'][k] = None
 
-                self.state['error']['entries'][k].destroy()
+            self.state['error']['entries'][k].destroy()
         self.state['error']['count'] = 0
     
     def clear_coef_values(self):
-        for k in range(0, self.state['coef']['count']):
-                self.state['coef']['values'][k][0] = None
-                self.state['coef']['values'][k][1] = None
+        values = self.state['coef']['values']
+        entries = self.state['coef']['entries']
 
-                self.state['coef']['entries'][k][0].destroy()
-                self.state['coef']['entries'][k][1].destroy()
+        for k in range(0, self.state['coef']['count']):
+            values[k][0] = None
+            values[k][1] = None
+
+            entries[k][0].destroy()
+            entries[k][1].destroy()
         self.state['coef']['count'] = 0
 
     # Same as recovering
-    def recover_error_entries(self, value_frame):    
+    def recover_error_entries(self, value_frame):
+        entries = self.state['error']['entries']
+
         for k in range(0, self.state['error']['count']):
-                row = k // 4
-                column = k % 4
-                
-                self.state['error']['entries'][k] = tk.Entry(master=value_frame,
-                                                            width=10)
-                self.state['error']['entries'][k].insert(0, self.state['error']['values'][k])
-                self.state['error']['entries'][k].place(y=15+row*15, x=13+column*80)
+            row = k // 4
+            column = k % 4
+            
+            entries[k] = tk.Entry(master=value_frame, width=10)
+
+            entries[k].insert(0, self.state['error']['values'][k])
+            entries[k].place(y=15+row*15, x=13+column*80)
         self.cnt_input.insert(0, self.state['error']['count'])
 
-    def recover_coef_entries(self, value_frame):    
+    def recover_coef_entries(self, value_frame):
+        entries = self.state['coef']['entries']
+        values = self.state['coef']['values']
+
         for k in range(0, self.state['coef']['count']):
-                row = k
-                
-                self.state['coef']['entries'][k] = [
-                    tk.Entry(master=value_frame, width=10),
-                    tk.Entry(master=value_frame, width=10),
-                ]
+            row = k
+            
+            entries[k] = [
+                tk.Entry(master=value_frame, width=10),
+                tk.Entry(master=value_frame, width=10),
+            ]
 
-                if self.state['coef']['values'][k][0]:
-                    self.state['coef']['entries'][k][0].insert(0, self.state['coef']['values'][k][0])
+            if values[k][0]:
+                entries[k][0].insert(0, values[k][0])
 
-                if self.state['coef']['values'][k][1]:
-                    self.state['coef']['entries'][k][1].insert(0, self.state['coef']['values'][k][1])
+            if values[k][1]:
+                entries[k][1].insert(0, values[k][1])
 
-                self.state['coef']['entries'][k][0].place(y=15+row*15, x=80)
-                self.state['coef']['entries'][k][1].place(y=15+row*15, x=180)
+            entries[k][0].place(y=15+row*15, x=80)
+            entries[k][1].place(y=15+row*15, x=180)
         self.cnt_input.insert(0, self.state['coef']['count'])
     
     # When I switch between tools, I want to keep my data intact.
     def store_errors(self):
+        values = self.state['error']['values']
+        entries = self.state['error']['entries']
+
         for i in range(self.state['error']['count']):
-            self.state['error']['values'][i] = self.state['error']['entries'][i].get()
+            values[i] = entries[i].get()
 
     def store_coef(self):
+        values = self.state['coef']['values']
+        entries = self.state['coef']['entries']
+
         for i in range(self.state['coef']['count']):
-            self.state['coef']['values'][i][0] = self.state['coef']['entries'][i][0].get()
-            self.state['coef']['values'][i][1] = self.state['coef']['entries'][i][1].get()
+            values[i][0] = entries[i][0].get()
+            values[i][1] = entries[i][1].get()
     
     # Simple function to easily modify color and state of button
     def config_button(self, btn, state, bg, fg):
